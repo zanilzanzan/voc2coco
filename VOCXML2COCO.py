@@ -10,20 +10,22 @@ class VOCXML2COCO:
         else:
             raise Exception('Given input directory doesn\'t exist.')
         if not os.path.exists(dest):
-            os.makedirs(os.path.join(dest, 'train'))
-
-        self.json_file = os.path.join(dest, 'train', 'uav_instances_coco.json')
+            os.makedirs(os.path.join(dest))
+        tail = os.path.basename(os.path.normpath(dest))
+        self.json_file = os.path.join(dest, tail + '.json')
+        print(str(os.path.basename(dest)))
 
         self.coco = dict()
         self.coco['images'] = []
         self.coco['type'] = 'instances'
         self.coco['annotations'] = []
-        self.coco['categories'] = []
+        self.coco['categories'] = [{"supercategory": "none", "id": 1, "name": "ufo"}, 
+                                   {"supercategory": "none", "id": 2, "name": "uav"}]
 
         self.image_set = set()
-        self.category_dict = dict()
+        self.category_dict = {'uav':2, 'ufo':1}
 
-        self.category_item_id = 0
+        self.category_item_id = 3
         self.image_id = 20190000000
         self.annotation_id = 0
 

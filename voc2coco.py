@@ -1,4 +1,5 @@
 import argparse
+import os
 
 def parse_args():
     """Parse in command line arguments"""
@@ -31,6 +32,10 @@ if __name__ == "__main__":
     opt = parse_args()
     dest = opt[0].output_dir
     val_part = opt[0].val_percent
+    if not os.path.exists(dest):
+        os.makedirs(os.path.join(dest))
+        if val_part:
+             os.makedirs(os.path.join(dest, 'val'))
     print('-'*80)
 
     if val_part > 0:
