@@ -3,7 +3,7 @@ import os
 import shutil
 
 
-class VOCJSON2COCO:
+class JSON2COCO:
     def __init__(self, src, dest, val_part):
         if os.path.exists(src):
             self.json_path = src
@@ -11,8 +11,8 @@ class VOCJSON2COCO:
             raise Exception('Given .json annotation input file doesn\'t exist.')
 
         self.image_src = os.path.abspath(os.path.join(src, '..', 'images'))
-        if not os.path.exists(self.image_src):
-            raise Exception('Given images input directory doesn\'t exist.')
+        # if not os.path.exists(self.image_src):
+        #     raise Exception('Given images input directory doesn\'t exist.')
 
         self.dest = dest
         self.train_dest = os.path.join(dest, 'train', 'images')
@@ -89,7 +89,8 @@ class VOCJSON2COCO:
         img_id = int(img_id_pt1 + img_id_pt2)
         return img_id
 
-    def add_image_item(self, file_name, size, part):
+    def add_image_item(self, name, size, part):
+        file_name = name['reference_id']
         if file_name is None:
             raise Exception('Could not find filename info in .json file.')
         if size['width'] is None:
@@ -102,10 +103,17 @@ class VOCJSON2COCO:
         image_item['file_name'] = file_name
         image_item['width'] = size['width']
         image_item['height'] = size['height']
+        if 'conditions' in name:
+            image_item['conditions'] = dict()
+            image_item['conditions']['snowing'] = name['conditions']['snowing']
+            image_item['conditions']['fog']	= name['conditions']['fog']
+            image_item['conditions']['sky']	= name['conditions']['sky']
+            image_item['conditions']['raining'] = name['conditions']['raining']
+            image_item['conditions']['daytime']	= name['conditions']['daytime']
         self.coco[part]['images'].append(image_item)
         return image_id
 
-    def add_annotation_item(self, image_id, category_id, bbox, part):
+    def add_annotation_item(self, image_id, category_id, bbox, part, type_name):
         annotation_item = dict()
         annotation_item['segmentation'] = []
 
@@ -132,6 +140,7 @@ class VOCJSON2COCO:
         annotation_item['image_id'] = image_id
         annotation_item['bbox'] = bbox
         annotation_item['category_id'] = category_id
+        annotation_item['type'] = type_name
         self.annotation_id += 1
         annotation_item['id'] = self.annotation_id
         self.coco[part]['annotations'].append(annotation_item)
@@ -141,40 +150,51 @@ class VOCJSON2COCO:
             obj = json.load(f)
 
         for name in obj:
-            if len(obj[name]['labels']) == 0:
+            if len(name['final_output']) == 0:
                 continue
 
-            # Use the part below to generate a smaller annotation file with fewer images.
-            # Don't forget to use corresponding images!
-            # if int(img_id_pt2[-5:]) < 2800:
-            #    continue
-            # print(img_id_pt2[-5:])
-
-            # Assign the dict that contains bounding box list and category id to label_element and create COCO bbox list
-            label_element = obj[name]['labels'][0]
-            bbox = label_element['bbox']
-            category_name = label_element['category_name'].lower()
-            bbox_height = bbox[2] - bbox[0]
-            bbox_width = bbox[3] - bbox[1]
-            coco_bbox = [bbox[1], bbox[0], bbox_width, bbox_height]
-
+                # Use the part below to generate a smaller annotation file with fewer images.
+                # Don't forget to use corresponding images!
+                # if int(img_id_pt2[-5:]) < 2800:
+                #    continue
+                # print(img_id_pt2[-5:])
             if (self.annotation_id % 10) < self.val_part and self.val_part:
                 part = 'val'
             else:
                 part = 'train'
 
-            shutil.copyfile(os.path.join(self.image_src, name), os.path.join(self.dest, part, 'images',name))
+            current_img_id = self.add_image_item(name, {'width':1920, 'height':1080}, part)
 
-            # Add image-item dict to uav_coco_dset['images'] list
-            current_img_id = self.add_image_item(name, obj[name], part)
+            for obj_crd in name['final_output']:
+                print(obj_crd['label'])
+                print(obj_crd['coordinates'])
 
-            # Correct category_name conflicts and check if the category name and id is already registered
-            if category_name == 'fo':
-                category_name = 'ufo'
-            if category_name not in self.category_dict:
-                current_category_id = self.add_category_item(category_name)
-            else:
-                current_category_id = self.category_dict[category_name]
+                # Assign the dict that contains bounding box list and category id to label_element and create COCO bbox list
+                # label_element = obj[name]['labels'][0]
+                # bbox = label_element['bbox']
+                # category_name = label_element['category_name'].lower()
+                category_name = obj_crd['label'].lower()
+                type_name = None
+                if 'type' in obj_crd:
+                    type_name = obj_crd['type'].lower()
+                # bbox_height = bbox[2] - bbox[0]
+                # bbox_width = bbox[3] - bbox[1]
+                bbox_height = obj_crd['coordinates']['xmax'] - obj_crd['coordinates']['xmin']
+                bbox_width = obj_crd['coordinates']['ymax'] - obj_crd['coordinates']['ymin']
+                coco_bbox = [obj_crd['coordinates']['ymin'], obj_crd['coordinates']['xmin'], bbox_width, bbox_height]
 
-            # Add annotation-item dict to uav_coco_dset['annotations'] list
-            self.add_annotation_item(current_img_id, current_category_id, coco_bbox, part)
+                # shutil.copyfile(os.path.join(self.image_src, name), os.path.join(self.dest, part, 'images', name))
+                # Add image-item dict to uav_coco_dset['images'] list
+                # current_img_id = self.add_image_item(name, obj[name], part)
+
+                # Correct category_name conflicts and check if the category name and id is already registered
+                if category_name == 'fo':
+                    category_name = 'ufo'
+                if category_name not in self.category_dict:
+                    current_category_id = self.add_category_item(category_name)
+                else:
+                    current_category_id = self.category_dict[category_name]
+
+                # Add annotation-item dict to uav_coco_dset['annotations'] list
+                self.add_annotation_item(current_img_id, current_category_id, coco_bbox, part, type_name)
+            # break
