@@ -1,6 +1,6 @@
 import json
 import os
-
+import argparse
 
 def merge_json_files(src, dest):
     if not os.path.exists(src):
@@ -31,6 +31,15 @@ def merge_json_files(src, dest):
 
 
 if __name__ == '__main__':
-    src = '/home/tarsier/data/tarsier_training_data_16GB/'
-    merge_json_files(src, src)
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-src", "--SourceDirectoryPath", required=True,
+                    help="Source directory path for .json files")
+    ap.add_argument("-dest", "--DestinationDirectoryPath", required=True,
+                    help="Destination directory path for merged .json file")
+    args = vars(ap.parse_args())
+
+    src = args["SourceDirectoryPath"]
+    dest = args["DestinationDirectoryPath"]
+
+    merge_json_files(src, dest)
 
