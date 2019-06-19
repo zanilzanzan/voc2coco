@@ -1,6 +1,5 @@
 import json
 import os
-import shutil
 
 
 def merge_json_files(src, dest):
@@ -30,7 +29,8 @@ def merge_json_files(src, dest):
     coco_file = os.path.join(dest, 'merged.json')
     json.dump(annot_merged, open(coco_file, 'w'))
 
+
 if __name__ == '__main__':
-    src = '/media/anil/data_4TB/datasets/tfrecord_files/train_images/'
+    src = '/home/tarsier/data/tarsier_training_data_16GB/'
     merge_json_files(src, src)
 
