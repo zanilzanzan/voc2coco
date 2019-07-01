@@ -2,9 +2,13 @@ import json
 import os
 import argparse
 
+
 def merge_json_files(src, dest):
     if not os.path.exists(src):
         raise Exception('Given .json annotation input file doesn\'t exist.')
+
+    if not os.path.exists(dest):
+        os.makedirs(dest)
 
     annot_merged = dict()
     annot_merged['type'] = 'instances'
@@ -16,6 +20,7 @@ def merge_json_files(src, dest):
         for file in files:
             if file.endswith(".json"):
                 json_path = os.path.join(root, file)
+                print(json_path)
                 with open(json_path) as f:
                     annot = json.load(f)
 
@@ -23,8 +28,8 @@ def merge_json_files(src, dest):
                     if not key == 'type':
                         print(key)
                         annot_merged[key] += (annot[key])
-
-                annot_merged['categories'] = list({v['id']:v for v in annot_merged['categories']}.values())
+                print(len(annot_merged['images']))
+    annot_merged['categories'] = list({v['id']: v for v in annot_merged['categories']}.values())
 
     coco_file = os.path.join(dest, 'merged.json')
     json.dump(annot_merged, open(coco_file, 'w'))
