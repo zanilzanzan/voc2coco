@@ -14,14 +14,12 @@ import datetime
 
 class JSON2COCO:
     def __init__(self, src, dest, part):
-        # if os.path.exists(src):
-        #     self.json_path = src
-        # else:
-        #     raise Exception('Given .json annotation input file doesn\'t exist.')
+        if os.path.exists(src):
+            self.json_path = src
+        else:
+            raise Exception('Given .json annotation input file doesn\'t exist.')
 
         self.image_src = os.path.abspath(os.path.join(src, '..', 'images'))
-        # if not os.path.exists(self.image_src):
-        #     raise Exception('Given images input directory doesn\'t exist.')
 
         self.src = src
         self.dest = dest
@@ -47,8 +45,7 @@ class JSON2COCO:
         self.recordReader(self.src)
         print('[PROGRESS] File conversion is successful.')
 
-        # json.dump(self.coco, open(self.coco_file, 'w'))
-
+	# The print parameters below are not set correctly. Revise them.
         print('-'*80)
         print('[INFO] Dataset has been created. Annotations and images have been saved.')
         print(' - Number of images placed in created dataset: {}'.format(len(self.coco['images'])))
@@ -57,7 +54,7 @@ class JSON2COCO:
         print('-'*80)
         print('[INFO] Categories have been created.')
         print(' - Number of categories created: {}'.format(len(self.coco['categories'])))
-        print(' - Names and IDs of created categories: ' + ''.join(['{0}:{1} '.format(k, v) for k,                                                                      v in self.category_dict.items()]))
+        print(' - Names and IDs of created categories: ' + ''.join(['{0}:{1} '.format(k, v) for k, v in self.category_dict.items()]))
         print('-' * 80)
 
     def add_category_item(self, name, id):
@@ -156,7 +153,7 @@ class JSON2COCO:
                     name = str(example.features.feature['image/filename'].bytes_list.value[0])
                     name = name[2:-1]
 
-                    # decode image and plot it
+                    # decode image
                     image_encoded = example.features.feature['image/encoded'].bytes_list.value[0]
                     encoded_jpg_io = io.BytesIO(image_encoded)
                     image = PIL.Image.open(encoded_jpg_io)
@@ -167,7 +164,7 @@ class JSON2COCO:
                     try:
                         # get the class labels and bounding box values in current image
                         current_img_id = self.add_image_item(name, {'width':width, 'height':height})
-
+			# read the bounding box values for each object
                         for i, cls_name in enumerate(example.features.feature['image/object/class/text'].bytes_list.value):
                             xmin = int(example.features.feature['image/object/bbox/xmin'].float_list.value[i] * width)
                             ymin = int(example.features.feature['image/object/bbox/ymin'].float_list.value[i] * height)
@@ -178,14 +175,14 @@ class JSON2COCO:
                             bbox_width = xmax - xmin
                             coco_bbox = [xmin, ymin, bbox_width, bbox_height]
 
-                            pt1 = (int(example.features.feature['image/object/bbox/xmin'].float_list.value[i] * width),
-                                   int(example.features.feature['image/object/bbox/ymin'].float_list.value[i] * height))
-                            pt2 = (int(example.features.feature['image/object/bbox/xmax'].float_list.value[i] * width),
-                                   int(example.features.feature['image/object/bbox/ymax'].float_list.value[i] * height))
+                            # pt1 = (int(example.features.feature['image/object/bbox/xmin'].float_list.value[i] * width),
+                            #       int(example.features.feature['image/object/bbox/ymin'].float_list.value[i] * height))
+                            # pt2 = (int(example.features.feature['image/object/bbox/xmax'].float_list.value[i] * width),
+                            #       int(example.features.feature['image/object/bbox/ymax'].float_list.value[i] * height))
 
                             category_name = str(cls_name)[2:-1].lower()
                             category_id = example.features.feature['image/object/class/label'].int64_list.value[i]
-
+			    # there is an incorrectly added category called 'fo'; correct them
                             if category_name == 'fo':
                                 category_name = 'ufo'
 
@@ -218,76 +215,6 @@ class JSON2COCO:
                 self.image_id = 0
                 self.annotation_id = 0
                 self.category_dict = dict()
-
-# def recordReader(recordDirPath):
-#     for tfr in os.listdir(recordDirPath):
-#         if tfr.endswith(".record"):
-#             record_iterator = tf.python_io.tf_record_iterator(path=os.path.join(recordDirPath,tfr))
-#
-#             for string_record in record_iterator:
-#                 example = tf.train.Example()
-#                 example.ParseFromString(string_record)
-#
-#                 height = int(example.features.feature['image/height']
-#                              .int64_list
-#                              .value[0])
-#
-#                 width = int(example.features.feature['image/width']
-#                             .int64_list
-#                             .value[0])
-#
-#                 #if(label=='uav'):
-#                 name = str(example.features.feature['image/filename'].bytes_list.value[0])
-#                 name = name[1:]
-#
-#                 # print("{} {} ".format(name, label))
-#                 # print("{} {} ".format(height, width))
-#
-#                 # decode image and plot it
-#                 image_encoded = example.features.feature['image/encoded'].bytes_list.value[0]
-#                 encoded_jpg_io = io.BytesIO(image_encoded)
-#                 image = PIL.Image.open(encoded_jpg_io)
-#                 pix = np.array(image.getdata())
-#                 img = np.reshape(pix, (height, width, 3))[:,:,[2,1,0]]
-#                 # cv2.imshow('Tarsier: Play Video', img)
-#                 # cv2.waitKey(-1)
-#
-#                 # read attributes
-#                 try:
-#                     for key, val in example.features.feature.items():
-#                         print(key)
-#                         print(example.features.feature[key])
-#
-#                     # for i in example.features.feature['image/extra']:
-#                     #     print(i)
-#
-#                     # get the class labels and bounding box values in current image
-#                     for i, cls_name in enumerate(example.features.feature['image/object/class/text'].bytes_list.value):
-#                         print(str(cls_name)[1:])
-#                         pt1 = (int(example.features.feature['image/object/bbox/xmin'].float_list.value[i] * width),
-#                                int(example.features.feature['image/object/bbox/ymin'].float_list.value[i] * height))
-#                         pt2 = (int(example.features.feature['image/object/bbox/xmax'].float_list.value[i] * width),
-#                                int(example.features.feature['image/object/bbox/ymax'].float_list.value[i] * height))
-#                         print(' xmin, ymin: ', pt1)
-#                         # print(' ymin: ', example.features.feature['image/object/bbox/ymin'].float_list.value[i] * height)
-#                         print(' xmax, ymax: ', pt2)
-#                         # print(' ymax: ', example.features.feature['image/object/bbox/ymax'].float_list.value[i] * height)
-#                         img = cv2.rectangle(img, pt1, pt2, (0, 255, 0), 1)
-#                     label = str(example.features.feature['image/object/class/text'].bytes_list.value[0])
-#                     label = label[1:]
-#                     # print('label: ', label)
-#                 except:
-#                     print('No label found for this image')
-#                     label = 'none'
-#                     pass
-#
-#                 img = cv2.rectangle(img, pt1, pt2, (0, 255, 0), 1)
-#                 cv2.imwrite('test.jpeg', img)
-#                 print("{} {} ".format(name, label))
-#                 print("{} {} ".format(height, width))
-#                 # plt.imshow(img)
-#                 # plt.show()
-
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
