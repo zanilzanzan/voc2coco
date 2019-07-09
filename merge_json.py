@@ -12,6 +12,8 @@ def merge_json_files(src, dest):
 
     annot_merged = dict()
     annot_merged['type'] = 'instances'
+    annot_merged['info'] = list()
+    annot_merged['licenses'] = list()
     annot_merged['images'] = list()
     annot_merged['annotations'] = list()
     annot_merged['categories'] = list()
@@ -28,10 +30,12 @@ def merge_json_files(src, dest):
                     if not key == 'type':
                         print(key)
                         annot_merged[key] += (annot[key])
+
                 print(len(annot_merged['images']))
     annot_merged['categories'] = list({v['id']: v for v in annot_merged['categories']}.values())
 
-    coco_file = os.path.join(dest, 'merged.json')
+    json_save_name = os.path.basename(os.path.normpath(src)) + '.json'
+    coco_file = os.path.join(dest, json_save_name)
     json.dump(annot_merged, open(coco_file, 'w'))
 
 

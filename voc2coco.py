@@ -53,6 +53,7 @@ if __name__ == "__main__":
     #     src = opt[0].json_input_file
     #     coco_annotations = VOCJSON2COCO(src, dest, val_part)
     #     coco_annotations.convert_2_coco()
+
     if opt[1][1] == 'json':
         from JSON2COCO import JSON2COCO
         src = opt[0].json_input_file

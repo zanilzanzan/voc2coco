@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
 import os
+import sys
 import json
 import shutil
 
@@ -19,15 +20,30 @@ class VOCXML2COCO:
         self.coco['images'] = []
         self.coco['type'] = 'instances'
         self.coco['annotations'] = []
-        self.coco['categories'] = [{"supercategory": "none", "id": 1, "name": "ufo"}, 
-                                   {"supercategory": "none", "id": 2, "name": "uav"}]
+        self.coco['categories'] = [{"supercategory": "none", "id": 17, "name": "ufo"},
+                                   {"supercategory": "none", "id": 1, "name": "uav"}]
 
         self.image_set = set()
-        self.category_dict = {'uav':2, 'ufo':1}
+        self.category_dict = {'uav':1, 'ufo':17}
 
         self.category_item_id = 3
         self.image_id = 20190000000
         self.annotation_id = 0
+
+    def splitall(self, path):
+        allparts = []
+        while 1:
+            parts = os.path.split(path)
+            if parts[0] == path:  # sentinel for absolute paths
+                allparts.insert(0, parts[0])
+                break
+            elif parts[1] == path: # sentinel for relative paths
+                allparts.insert(0, parts[1])
+                break
+            else:
+                path = parts[0]
+                allparts.insert(0, parts[1])
+        return allparts
 
     def convert_2_coco(self):
         self.parse_xml_files(self.xml_path)
@@ -53,7 +69,8 @@ class VOCXML2COCO:
         self.image_id += 1
         image_item = dict()
         image_item['id'] = self.image_id
-        image_item['file_name'] = file_name
+        src_name = self.splitall(self.xml_path)[-3]
+        image_item['file_name'] = os.path.join(src_name, 'images', file_name)
         image_item['width'] = size['width']
         image_item['height'] = size['height']
         self.coco['images'].append(image_item)
@@ -135,6 +152,7 @@ class VOCXML2COCO:
                     else:
                         raise Exception('duplicated image: {}'.format(file_name))
                         # subelem is <width>, <height>, <depth>, <name>, <bndbox>
+
                 for subelem in elem:
                     bndbox['xmin'] = None
                     bndbox['xmax'] = None
