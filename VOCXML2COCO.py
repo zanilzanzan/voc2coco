@@ -1,8 +1,9 @@
-import xml.etree.ElementTree as ET
 import os
 import sys
 import json
-import shutil
+import fnmatch
+import xml.etree.ElementTree as ET
+
 
 class VOCXML2COCO:
     def __init__(self, src, dest):
@@ -12,9 +13,10 @@ class VOCXML2COCO:
             raise Exception('Given input directory doesn\'t exist.')
         if not os.path.exists(dest):
             os.makedirs(os.path.join(dest))
-        tail = os.path.basename(os.path.normpath(dest))
+        # tail = os.path.basename(os.path.normpath(src))
+        tail = self.splitall(self.xml_path)[-2]
         self.json_file = os.path.join(dest, tail + '.json')
-        print(str(os.path.basename(dest)))
+        # print(str(os.path.basename(dest)))
 
         self.coco = dict()
         self.coco['images'] = []
@@ -24,7 +26,7 @@ class VOCXML2COCO:
                                    {"supercategory": "none", "id": 1, "name": "uav"}]
 
         self.image_set = set()
-        self.category_dict = {'uav':1, 'ufo':17}
+        self.category_dict = {'uav': 1, 'ufo': 17}
 
         self.category_item_id = 3
         self.image_id = 20190000000
@@ -48,6 +50,7 @@ class VOCXML2COCO:
     def convert_2_coco(self):
         self.parse_xml_files(self.xml_path)
         json.dump(self.coco, open(self.json_file, 'w'))
+        return self.json_file
 
     def add_category_item(self, name):
         category_item = dict()
@@ -69,7 +72,7 @@ class VOCXML2COCO:
         self.image_id += 1
         image_item = dict()
         image_item['id'] = self.image_id
-        src_name = self.splitall(self.xml_path)[-3]
+        src_name = self.splitall(self.xml_path)[-2]
         image_item['file_name'] = os.path.join(src_name, 'images', file_name)
         image_item['width'] = size['width']
         image_item['height'] = size['height']
@@ -109,7 +112,16 @@ class VOCXML2COCO:
         self.coco['annotations'].append(annotation_item)
 
     def parse_xml_files(self, xml_path):
-        for f in os.listdir(xml_path):
+        xml_files = fnmatch.filter(os.listdir(xml_path), '*.xml')
+        total_xml_files = len(xml_files)
+        # print(total_xml_files)
+
+        for i, f in enumerate(xml_files):
+            progress_txt = '[PROGRESS] Processing XML files: [%06d/%06d]\r' % (i+1, total_xml_files)
+            if (i+1) % 10 == 0:
+                sys.stdout.write("\r" + progress_txt)
+                sys.stdout.flush()
+
             if not f.endswith('.xml'):
                 continue
 
@@ -201,3 +213,4 @@ class VOCXML2COCO:
                         # print('add annotation with {},{},{},{}'.format(object_name, current_image_id,
                         # current_category_id, bbox))
                         self.add_annotation_item(current_image_id, current_category_id, bbox)
+            print('[END] Processed all XML files in given directory: [%06d/%06d]\r' % (i+1, total_xml_files))

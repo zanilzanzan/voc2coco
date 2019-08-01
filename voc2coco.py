@@ -63,8 +63,9 @@ if __name__ == "__main__":
         from VOCXML2COCO import VOCXML2COCO
         src = opt[0].xml_input_dir
         coco_annotations = VOCXML2COCO(src, dest)
-        coco_annotations.convert_2_coco()
+        file_name = coco_annotations.convert_2_coco()
         # print(opt[0].xml_input_dir)
         
-    print('[END] Resuling JSON file, in COCO format, has been saved in {} \n'.format(opt[0].output_dir))
+    print('[END] Resuling JSON file, in COCO format, has been saved: {}'.format(file_name))
+    print('-'*80)
 
