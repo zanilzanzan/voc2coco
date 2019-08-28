@@ -11,8 +11,8 @@ class VOCJSON2COCO:
             raise Exception('Given .json annotation input file doesn\'t exist.')
 
         self.image_src = os.path.abspath(os.path.join(src, '..', 'images'))
-        if not os.path.exists(self.image_src):
-            raise Exception('Given images input directory doesn\'t exist.')
+        # if not os.path.exists(self.image_src):
+        #     raise Exception('Given images input directory doesn\'t exist.')
 
         self.dest = dest
         self.train_dest = os.path.join(dest, 'train', 'images')
@@ -23,8 +23,16 @@ class VOCJSON2COCO:
 
         self.category_dict = dict()
         self.category_item_id = 0
-        self.annotation_id = 0
+        self.annotation_id = 7081902000000
         self.coco = dict()
+        self.categories_dict = {1: 'uav', 2: 'airplane', 3: 'bicycle', 4: 'bird', 5: 'boat',
+                                6: 'bus', 7: 'car', 8: 'cat', 9: 'cow', 10: 'dog', 11: 'horse',
+                                12: 'motorcycle', 13: 'person', 14: 'traffic_light', 15: 'train',
+                                16: 'truck', 17: 'ufo', 18: 'helicopter'}
+        self.cat_names_dict = {'uav': 1, 'airplane': 2, 'bicycle': 3, 'bird': 4, 'boat': 5,
+                                'bus': 6, 'car': 7, 'cat': 8, 'cow': 9, 'dog': 10, 'horse': 11,
+                                'motorcycle': 12, 'person': 13, 'traffic_light': 14, 'train': 15,
+                                'truck': 16, 'ufo': 17, 'helicopter': 18}
         self.coco['categories'] = []
         self.get_coco_dset('train')
 
@@ -76,16 +84,16 @@ class VOCJSON2COCO:
     def add_category_item(self, name):
         category_item = dict()
         category_item['supercategory'] = 'none'
-        self.category_item_id += 1
-        category_item['id'] = self.category_item_id
+        # self.category_item_id += 1
+        category_item['id'] = self.cat_names_dict[name]
         category_item['name'] = name
         self.coco['categories'].append(category_item)
         self.category_dict[name] = self.category_item_id
-        return self.category_item_id
+        return category_item['id']
 
     def get_image_id(self, file_name):
-        img_id_pt2 = '00' + file_name.rsplit('.', 1)[0][-10:]
-        img_id_pt1 = '1'  # '1' for 'testsite_uav'
+        img_id_pt2 = '0708' + file_name.rsplit('.', 1)[0][-10:]
+        img_id_pt1 = '1902'  # '1' for 'testsite_uav'
         img_id = int(img_id_pt1 + img_id_pt2)
         return img_id
 
@@ -99,7 +107,7 @@ class VOCJSON2COCO:
         image_id = self.get_image_id(file_name)
         image_item = dict()
         image_item['id'] = image_id
-        image_item['file_name'] = file_name
+        image_item['file_name'] = os.path.join('bishal_testsite', 'images', file_name)
         image_item['width'] = size['width']
         image_item['height'] = size['height']
         self.coco[part]['images'].append(image_item)
@@ -163,7 +171,7 @@ class VOCJSON2COCO:
             else:
                 part = 'train'
 
-            shutil.copyfile(os.path.join(self.image_src, name), os.path.join(self.dest, part, 'images',name))
+            # shutil.copyfile(os.path.join(self.image_src, name), os.path.join(self.dest, part, 'images',name))
 
             # Add image-item dict to uav_coco_dset['images'] list
             current_img_id = self.add_image_item(name, obj[name], part)
@@ -174,7 +182,8 @@ class VOCJSON2COCO:
             if category_name not in self.category_dict:
                 current_category_id = self.add_category_item(category_name)
             else:
-                current_category_id = self.category_dict[category_name]
+                current_category_id = self.cat_names_dict[category_name]
+            print(current_category_id)
 
             # Add annotation-item dict to uav_coco_dset['annotations'] list
             self.add_annotation_item(current_img_id, current_category_id, coco_bbox, part)

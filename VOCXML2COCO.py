@@ -213,4 +213,4 @@ class VOCXML2COCO:
                         # print('add annotation with {},{},{},{}'.format(object_name, current_image_id,
                         # current_category_id, bbox))
                         self.add_annotation_item(current_image_id, current_category_id, bbox)
-            print('[END] Processed all XML files in given directory: [%06d/%06d]\r' % (i+1, total_xml_files))
+        print('[END] Processed all XML files in given directory: [%06d/%06d]\r' % (i+1, total_xml_files))
