@@ -82,24 +82,18 @@ class VOCJSON2COCO:
         print('-' * 80)
 
     def create_cat_dict(self):
-        for key, value in self.cat_names_dict:
+        for key, value in self.cat_names_dict.items():
             category_item = dict()
             category_item['supercategory'] = 'none'
             category_item['name'] = key
             category_item['id'] = value
             self.coco['categories'].append(category_item)
+        print(self.coco['categories'])
 
     def add_category_item(self, name):
         category_item = dict()
         category_item['supercategory'] = 'none'
         # self.category_item_id += 1
-
-        if name == 'duck':
-            name = 'bird'
-        elif name == 'auv' or 'drone':
-            name = 'uav'
-        elif name == 'fo':
-            name = 'ufo'
 
         category_item['id'] = self.cat_names_dict[name]
         category_item['name'] = name
@@ -123,7 +117,7 @@ class VOCJSON2COCO:
         image_id = self.get_image_id(file_name)
         image_item = dict()
         image_item['id'] = image_id
-        image_item['file_name'] = file_name
+        image_item['file_name'] = file_name + '.png'
         image_item['width'] = size['width']
         image_item['height'] = size['height']
         self.coco[part]['images'].append(image_item)
@@ -195,10 +189,14 @@ class VOCJSON2COCO:
             current_img_id = self.add_image_item(name, obj[name], part)
 
             # Correct category_name conflicts and check if the category name and id is already registered
-            # if category_name == 'fo':
-            #     category_name = 'ufo'
+            if category_name == 'duck':
+                category_name = 'bird'
+            elif category_name == 'auv' or 'drone':
+                category_name = 'uav'
+            elif category_name == 'fo':
+                category_name = 'ufo'
 
-            if category_name not in self.category_dict:
+            if category_name not in self.cat_names_dict:
                 current_category_id = self.add_category_item(category_name)
             else:
                 current_category_id = self.cat_names_dict[category_name]
