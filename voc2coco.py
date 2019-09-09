@@ -65,7 +65,4 @@ if __name__ == "__main__":
         coco_annotations = VOCXML2COCO(os.path.join(src, 'images'), dest)
         file_name = coco_annotations.convert_2_coco()
         # print(opt[0].xml_input_dir)
-        
-    print('[END] Resuling JSON file, in COCO format, has been saved: {}'.format(file_name))
-    print('-'*80)
 
