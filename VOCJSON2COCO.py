@@ -81,10 +81,26 @@ class VOCJSON2COCO:
 
         print('-' * 80)
 
+    def create_cat_dict(self):
+        for key, value in self.cat_names_dict:
+            category_item = dict()
+            category_item['supercategory'] = 'none'
+            category_item['name'] = key
+            category_item['id'] = value
+            self.coco['categories'].append(category_item)
+
     def add_category_item(self, name):
         category_item = dict()
         category_item['supercategory'] = 'none'
         # self.category_item_id += 1
+
+        if name == 'duck':
+            name = 'bird'
+        elif name == 'auv' or 'drone':
+            name = 'uav'
+        elif name == 'fo':
+            name = 'ufo'
+
         category_item['id'] = self.cat_names_dict[name]
         category_item['name'] = name
         self.coco['categories'].append(category_item)
@@ -107,7 +123,7 @@ class VOCJSON2COCO:
         image_id = self.get_image_id(file_name)
         image_item = dict()
         image_item['id'] = image_id
-        image_item['file_name'] = os.path.join('bishal_testsite', 'images', file_name)
+        image_item['file_name'] = file_name
         image_item['width'] = size['width']
         image_item['height'] = size['height']
         self.coco[part]['images'].append(image_item)
@@ -148,6 +164,8 @@ class VOCJSON2COCO:
         with open(json_path) as f:
             obj = json.load(f)
 
+        self.create_cat_dict()
+
         for name in obj:
             if len(obj[name]['labels']) == 0:
                 continue
@@ -177,13 +195,14 @@ class VOCJSON2COCO:
             current_img_id = self.add_image_item(name, obj[name], part)
 
             # Correct category_name conflicts and check if the category name and id is already registered
-            if category_name == 'fo':
-                category_name = 'ufo'
+            # if category_name == 'fo':
+            #     category_name = 'ufo'
+
             if category_name not in self.category_dict:
                 current_category_id = self.add_category_item(category_name)
             else:
                 current_category_id = self.cat_names_dict[category_name]
-            print(current_category_id)
+            # print(current_category_id)
 
             # Add annotation-item dict to uav_coco_dset['annotations'] list
             self.add_annotation_item(current_img_id, current_category_id, coco_bbox, part)
