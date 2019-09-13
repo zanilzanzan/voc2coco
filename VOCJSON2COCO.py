@@ -92,10 +92,11 @@ class VOCJSON2COCO:
     def add_category_item(self, name):
         category_item = dict()
         category_item['supercategory'] = 'none'
-        category_item['id'] = self.category_item_id
+        category_item['id'] = self.cat_names_dict[name]
+        print(category_item['id'])
         category_item['name'] = name
         self.coco['categories'].append(category_item)
-        self.cat_names_dict[name] = self.category_item_id
+        self.cat_names_dict[name] = self.cat_names_dict[name]
         self.category_item_id += 1
         return category_item['id']
 
@@ -175,6 +176,7 @@ class VOCJSON2COCO:
             label_element = obj[name]['labels'][0]
             bbox = label_element['bbox']
             category_name = label_element['category_name'].lower()
+            # print(category_name)
             bbox_height = bbox[2] - bbox[0]
             bbox_width = bbox[3] - bbox[1]
             coco_bbox = [bbox[1], bbox[0], bbox_width, bbox_height]
@@ -192,10 +194,11 @@ class VOCJSON2COCO:
             # Correct category_name conflicts and check if the category name and id is already registered
             if category_name == 'duck':
                 category_name = 'bird'
-            elif category_name == 'auv' or 'drone':
+            elif category_name == 'auv' or category_name == 'drone':
                 category_name = 'uav'
             elif category_name == 'fo':
                 category_name = 'ufo'
+            # print(category_name)
 
             if category_name not in self.cat_names_dict:
                 current_category_id = self.add_category_item(category_name)
