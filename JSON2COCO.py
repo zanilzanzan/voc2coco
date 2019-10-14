@@ -1,7 +1,7 @@
 import json
 import os
 import shutil
-
+import datetime
 
 class JSON2COCO:
     def __init__(self, src, dest, val_part):
@@ -83,10 +83,16 @@ class JSON2COCO:
         self.category_dict[name] = self.category_item_id
         return self.category_item_id
 
-    def get_image_id(self, file_name):
-        img_id_pt2 = '00' + file_name.rsplit('.', 1)[0][-10:]
+    def get_image_id(self):
+        now = datetime.datetime.now()
+        unique_id = '%s' % now.strftime("%Y%m%d%H%M%S%f")
+        return unique_id
+
+    def get_image_id_old(self, file_name):
+        img_id_pt2 = '00' + file_name.rsplit('.', 1)[0][-6:]
         img_id_pt1 = '1'  # '1' for 'testsite_uav'
         img_id = int(img_id_pt1 + img_id_pt2)
+        img_id = int()
         return img_id
 
     def add_image_item(self, name, size, part):

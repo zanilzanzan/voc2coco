@@ -116,7 +116,7 @@ class VOCJSON2COCO:
         image_id = self.get_image_id(file_name)
         image_item = dict()
         image_item['id'] = image_id
-        image_item['file_name'] = file_name
+        image_item['file_name'] = os.path.basename(file_name)
         image_item['width'] = size['width']
         image_item['height'] = size['height']
         self.coco[part]['images'].append(image_item)
@@ -124,7 +124,7 @@ class VOCJSON2COCO:
 
     def add_annotation_item(self, image_id, category_id, bbox, part):
         annotation_item = dict()
-        annotation_item['segmentation'] = []
+        #annotation_item['segmentation'] = []
 
         seg = []
         # bbox[] is x,y,w,h
@@ -141,7 +141,7 @@ class VOCJSON2COCO:
         seg.append(bbox[0] + bbox[2])
         seg.append(bbox[1])
 
-        annotation_item['segmentation'].append(seg)
+        # annotation_item['segmentation'].append(seg)
 
         annotation_item['area'] = bbox[2] * bbox[3]
         annotation_item['iscrowd'] = 0
@@ -177,9 +177,9 @@ class VOCJSON2COCO:
             bbox = label_element['bbox']
             category_name = label_element['category_name'].lower()
             # print(category_name)
-            bbox_height = bbox[2] - bbox[0]
-            bbox_width = bbox[3] - bbox[1]
-            coco_bbox = [bbox[1], bbox[0], bbox_width, bbox_height]
+            bbox_height = bbox[3] - bbox[1]
+            bbox_width = bbox[2] - bbox[0]
+            coco_bbox = [bbox[0], bbox[1], bbox_width, bbox_height]
 
             if (self.annotation_id % 10) < self.val_part and self.val_part:
                 part = 'val'
