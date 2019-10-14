@@ -87,14 +87,7 @@ class JSON2COCO:
         now = datetime.datetime.now()
         unique_id = '%s' % now.strftime("%Y%m%d%H%M%S%f")
         return unique_id
-
-    def get_image_id_old(self, file_name):
-        img_id_pt2 = '00' + file_name.rsplit('.', 1)[0][-6:]
-        img_id_pt1 = '1'  # '1' for 'testsite_uav'
-        img_id = int(img_id_pt1 + img_id_pt2)
-        img_id = int()
-        return img_id
-
+    
     def add_image_item(self, name, size, part):
         file_name = name['reference_id']
         if file_name is None:
@@ -103,7 +96,7 @@ class JSON2COCO:
             raise Exception('Could not find width info in .json file.')
         if size['height'] is None:
             raise Exception('Could not find height info in .json file.')
-        image_id = self.get_image_id(file_name)
+        image_id = self.get_image_id()
         image_item = dict()
         image_item['id'] = image_id
         image_item['file_name'] = file_name
