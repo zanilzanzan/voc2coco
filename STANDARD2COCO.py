@@ -116,7 +116,8 @@ class S2CC:
         image_id = self.get_image_id()
         image_item = dict()
         image_item['id'] = image_id
-        image_item['file_name'] = os.path.basename(file_name)
+        file_name_list = os.path.split(file_name)
+        image_item['file_name'] = os.path.join(file_name_list[-2], file_name_list[-1])
         image_item['width'] = size['width']
         image_item['height'] = size['height']
         self.coco[part]['images'].append(image_item)
