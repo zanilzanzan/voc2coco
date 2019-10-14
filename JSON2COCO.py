@@ -87,7 +87,7 @@ class JSON2COCO:
         now = datetime.datetime.now()
         unique_id = '%s' % now.strftime("%Y%m%d%H%M%S%f")
         return unique_id
-    
+
     def add_image_item(self, name, size, part):
         file_name = name['reference_id']
         if file_name is None:

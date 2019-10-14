@@ -48,17 +48,17 @@ if __name__ == "__main__":
 
     print('[START] Format conversion starts.')
 
-    if opt[1][1] == 'json':
-        from VOCJSON2COCO import VOCJSON2COCO
-        src = opt[0].json_input_file
-        coco_annotations = VOCJSON2COCO(src, dest, val_part)
-        coco_annotations.convert_2_coco()
-
     # if opt[1][1] == 'json':
-    #     from JSON2COCO import JSON2COCO
+    #     from VOCJSON2COCO import VOCJSON2COCO
     #     src = opt[0].json_input_file
-    #     coco_annotations = JSON2COCO(src, dest, val_part)
+    #     coco_annotations = VOCJSON2COCO(src, dest, val_part)
     #     coco_annotations.convert_2_coco()
+
+    if opt[1][1] == 'json':
+        from JSON2COCO import JSON2COCO
+        src = opt[0].json_input_file
+        coco_annotations = JSON2COCO(src, dest, val_part)
+        coco_annotations.convert_2_coco()
     else:
         from VOCXML2COCO import VOCXML2COCO
         src = opt[0].xml_input_dir
