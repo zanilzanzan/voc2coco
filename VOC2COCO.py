@@ -5,7 +5,7 @@ import fnmatch
 import xml.etree.ElementTree as ET
 
 
-class VOCXML2COCO:
+class V2CC:
     def __init__(self, src, dest):
         if os.path.exists(src):
             self.xml_path = src

@@ -1,9 +1,10 @@
 import json
 import os
+import datetime
 import shutil
 
 
-class VOCJSON2COCO:
+class S2CC:
     def __init__(self, src, dest, val_part):
         if os.path.exists(src):
             self.json_path = src
@@ -100,11 +101,10 @@ class VOCJSON2COCO:
         self.category_item_id += 1
         return category_item['id']
 
-    def get_image_id(self, file_name):
-        img_id_pt2 = '0708' + file_name.rsplit('.', 1)[0][-10:]
-        img_id_pt1 = '1902'  # '1' for 'testsite_uav'
-        img_id = int(img_id_pt1 + img_id_pt2)
-        return img_id
+    def get_image_id(self):
+        now = datetime.datetime.now()
+        unique_id = '%s' % now.strftime("%Y%m%d%H%M%S%f")
+        return unique_id
 
     def add_image_item(self, file_name, size, part):
         if file_name is None:
@@ -113,7 +113,7 @@ class VOCJSON2COCO:
             raise Exception('Could not find width info in .json file.')
         if size['height'] is None:
             raise Exception('Could not find height info in .json file.')
-        image_id = self.get_image_id(file_name)
+        image_id = self.get_image_id()
         image_item = dict()
         image_item['id'] = image_id
         image_item['file_name'] = os.path.basename(file_name)
