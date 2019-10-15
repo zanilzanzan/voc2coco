@@ -173,39 +173,42 @@ class S2CC:
             #    continue
             # print(img_id_pt2[-5:])
 
-            # Assign the dict that contains bounding box list and category id to label_element and create COCO bbox list
-            label_element = obj[name]['labels'][0]
-            bbox = label_element['bbox']
-            category_name = label_element['category_name'].lower()
-            # print(category_name)
-            bbox_height = bbox[3] - bbox[1]
-            bbox_width = bbox[2] - bbox[0]
-            coco_bbox = [bbox[0], bbox[1], bbox_width, bbox_height]
+            # if (self.annotation_id % 10) < self.val_part and self.val_part:
+            #     part = 'val'
+            # else:
+            #     part = 'train'
 
-            if (self.annotation_id % 10) < self.val_part and self.val_part:
-                part = 'val'
-            else:
-                part = 'train'
-
-            # shutil.copyfile(os.path.join(self.image_src, name), os.path.join(self.dest, part, 'images',name))
-
+            part = 'train'
             # Add image-item dict to uav_coco_dset['images'] list
             current_img_id = self.add_image_item(img_name, obj[name], part)
 
-            # Correct category_name conflicts and check if the category name and id is already registered
-            if category_name == 'duck':
-                category_name = 'bird'
-            elif category_name == 'auv' or category_name == 'drone':
-                category_name = 'uav'
-            elif category_name == 'fo':
-                category_name = 'ufo'
-            # print(category_name)
+            # Assign the dict that contains bounding box list and category id to label_element and create COCO bbox list
+            for label_element in obj[name]['labels']:
+                print(current_img_id, label_element)
 
-            if category_name not in self.cat_names_dict:
-                current_category_id = self.add_category_item(category_name)
-            else:
-                current_category_id = self.cat_names_dict[category_name]
-            # print(current_category_id)
+                bbox = label_element['bbox']
+                category_name = label_element['category_name'].lower()
+                # print(category_name)
+                bbox_height = bbox[3] - bbox[1]
+                bbox_width = bbox[2] - bbox[0]
+                coco_bbox = [bbox[0], bbox[1], bbox_width, bbox_height]
 
-            # Add annotation-item dict to uav_coco_dset['annotations'] list
-            self.add_annotation_item(current_img_id, current_category_id, coco_bbox, part)
+                # shutil.copyfile(os.path.join(self.image_src, name), os.path.join(self.dest, part, 'images',name))
+
+                # Correct category_name conflicts and check if the category name and id is already registered
+                if category_name == 'duck':
+                    category_name = 'bird'
+                elif category_name == 'auv' or category_name == 'drone':
+                    category_name = 'uav'
+                elif category_name == 'fo':
+                    category_name = 'ufo'
+                # print(category_name)
+
+                if category_name not in self.cat_names_dict:
+                    current_category_id = self.add_category_item(category_name)
+                else:
+                    current_category_id = self.cat_names_dict[category_name]
+                # print(current_category_id)
+
+                # Add annotation-item dict to uav_coco_dset['annotations'] list
+                self.add_annotation_item(current_img_id, current_category_id, coco_bbox, part)
