@@ -106,24 +106,41 @@ class S2CC:
         unique_id = '%s' % now.strftime("%Y%m%d%H%M%S%f")
         return unique_id
 
-    def add_image_item(self, file_name, size, part):
+    def add_image_item(self, file_name, img_obj, part):
         if file_name is None:
             raise Exception('Could not find filename info in .json file.')
-        if size['width'] is None:
+        if img_obj['width'] is None:
             raise Exception('Could not find width info in .json file.')
-        if size['height'] is None:
+        if img_obj['height'] is None:
             raise Exception('Could not find height info in .json file.')
         image_id = self.get_image_id()
         image_item = dict()
         image_item['id'] = image_id
         file_name_list = os.path.split(file_name)
-        image_item['file_name'] = os.path.join(file_name_list[-2], file_name_list[-1])
-        image_item['width'] = size['width']
-        image_item['height'] = size['height']
+        print(img_obj.keys())
+        # image_item['file_name'] = os.path.join(file_name_list[-2], file_name_list[-1])
+        image_item['file_name'] = img_obj['image_path']
+        image_item['width'] = img_obj['width']
+        image_item['height'] = img_obj['height']
+
+        try:
+            image_item['daytime'] = img_obj['daytime']
+            image_item['illuminated'] = img_obj['illuminated']
+            image_item['fog'] = img_obj['fog']
+            image_item['rain'] = img_obj['rain']
+            image_item['sky'] = img_obj['sky']
+            image_item['snow'] = img_obj['snow']
+            image_item['spectrum'] = img_obj['spectrum']
+            image_item['video_id'] = img_obj['video_id']
+            image_item['resolution'] = img_obj['resolution']
+            image_item['depth'] = img_obj['depth']
+        except:
+            pass
+
         self.coco[part]['images'].append(image_item)
         return image_id
 
-    def add_annotation_item(self, image_id, category_id, bbox, part):
+    def add_annotation_item(self, image_id, category_id, bbox, part, type):
         annotation_item = dict()
         #annotation_item['segmentation'] = []
 
@@ -150,6 +167,7 @@ class S2CC:
         annotation_item['image_id'] = image_id
         annotation_item['bbox'] = bbox
         annotation_item['category_id'] = category_id
+        annotation_item['type'] = type
         self.annotation_id += 1
         annotation_item['id'] = self.annotation_id
         self.coco[part]['annotations'].append(annotation_item)
@@ -165,7 +183,8 @@ class S2CC:
                 continue
 
             img_path_list = obj[name]['image_path'].split('/')
-            img_name = os.path.join(img_path_list[-2], img_path_list[-1])
+            img_name = os.path.join(img_path_list[-3], img_path_list[-2], img_path_list[-1])
+            # img_name = os.path.join(img_path_list[-2], img_path_list[-1])
 
             # Use the part below to generate a smaller annotation file with fewer images.
             # Don't forget to use corresponding images!
@@ -210,5 +229,11 @@ class S2CC:
                     current_category_id = self.cat_names_dict[category_name]
                 # print(current_category_id)
 
+                # If the annotation belongs to a UAV add drone type
+                try:
+                    drone_type = label_element['type']
+                except:
+                    drone_type = None
+
                 # Add annotation-item dict to uav_coco_dset['annotations'] list
-                self.add_annotation_item(current_img_id, current_category_id, coco_bbox, part)
+                self.add_annotation_item(current_img_id, current_category_id, coco_bbox, part, drone_type)
