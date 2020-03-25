@@ -104,7 +104,7 @@ class S2CC:
     def get_image_id(self):
         now = datetime.datetime.now()
         unique_id = '%s' % now.strftime("%Y%m%d%H%M%S%f")
-        return unique_id
+        return int(unique_id)
 
     def add_image_item(self, file_name, img_obj, part):
         if file_name is None:
